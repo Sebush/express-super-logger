@@ -102,19 +102,19 @@ module.exports = function(app, options){
         var fmt = "\033[%dm%s\033[37m\n";
         console.log = console.info = console.warn = function(){};
 
-        if(['info'].indexOf(options.level)){
+        if(['info'].indexOf(options.level) > -1){
             console.info = function() {
                 process.stdout.write(util.format(fmt, 37, '[INFO] '+util.format.apply(this, arguments)));
             };
         }
 
-        if(['info', 'log'].indexOf(options.level)){
+        if(['info', 'log'].indexOf(options.level) > -1){
             console.log = function() {
                 process.stdout.write(util.format(fmt, 33, '[LOG] '+util.format.apply(this, arguments)));
             };
         }
 
-        if(['info', 'log', 'warn'].indexOf(options.level)){
+        if(['info', 'log', 'warn'].indexOf(options.level) > -1){
             console.warn = function() {
                 var message = util.format.apply(this, arguments);
                 process.stderr.write(util.format(fmt, 35, '[WARN] '+message));
