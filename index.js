@@ -16,6 +16,7 @@ var  logFormat = '{status: :status, method: ":method", url: ":url", resContentLe
 module.exports = function(app, options){
     // options
     options = _.extend({
+        level: 'warn',
         debug: true,
         color: true,
         mail: {
@@ -99,40 +100,46 @@ module.exports = function(app, options){
      */
     if(options.debug){
         var fmt = "\033[%dm%s\033[37m\n";
+        console.log = console.info = console.warn = function(){};
 
-        console.log = function() {
-            process.stdout.write(util.format(fmt, 33, '[LOG] '+util.format.apply(this, arguments)));
-        };
+        if(['info'].indexOf(options.level)){
+            console.info = function() {
+                process.stdout.write(util.format(fmt, 37, '[INFO] '+util.format.apply(this, arguments)));
+            };
+        }
 
-        console.info = function() {
-            process.stdout.write(util.format(fmt, 37, '[INFO] '+util.format.apply(this, arguments)));
-        };
+        if(['info', 'log'].indexOf(options.level)){
+            console.log = function() {
+                process.stdout.write(util.format(fmt, 33, '[LOG] '+util.format.apply(this, arguments)));
+            };
+        }
 
-        console.warn = function() {
-            var message = util.format.apply(this, arguments);
-            process.stderr.write(util.format(fmt, 35, '[WARN] '+message));
-            logStreamError.write('{warn: '+message+'}\n');
-        };
+        if(['info', 'log', 'warn'].indexOf(options.level)){
+            console.warn = function() {
+                var message = util.format.apply(this, arguments);
+                process.stderr.write(util.format(fmt, 35, '[WARN] '+message));
+                options.mail && options.mail.send({subject: 'ZCMS-Warn', text: message});
+                logStreamError.write('{warn: '+message+'}\n');
+            };
+        }
 
         console.error = function() {
             var message = util.format.apply(this, arguments);
             process.stderr.write(util.format(fmt, 31, '[ERROR] '+message));
-            if(options.log){
-                options.mail.send({subject: 'ZCMS-Error', text: message});
-                logStreamError.write('{error: '+message+'}\n');
-            }
+            options.mail && options.mail.send({subject: 'ZCMS-Error', text: message});
+            logStreamError.write('{error: '+message+'}\n');
         };
     }else{
         console.log = console.info = console.count = console.time = console.timeEnd = console.warn = console.error = function(){};
         if(options.log){
             console.warn = function() {
                 var message = util.format.apply(this, arguments);
-                options.mail.send({subject: 'ZCMS-Warn', text: message});
+                options.mail && options.mail.send({subject: 'ZCMS-Warn', text: message});
                 logStreamError.write('{warn: '+message+'}\n');
             };
             console.error = function() {
                 var message = util.format.apply(this, arguments);
-                options.mail.send({subject: 'ZCMS-Error', text: message});
+                options.mail && options.mail.send({subject: 'ZCMS-Error', text: message});
                 logStreamError.write('{error: '+message+'}\n');
             };
         }
