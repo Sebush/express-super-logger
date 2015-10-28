@@ -91,10 +91,6 @@ module.exports = function(app, options){
         res.status(500).render('500');
     });
 
-    process.on('uncaughtException', function(err){
-        console.error('uncaughtException', err, err.stack);
-    });
-
     /*
      * modify console for dev and production
      */
@@ -147,3 +143,6 @@ module.exports = function(app, options){
 
 };
 
+process.on('uncaughtException', function(err){
+    console.error('uncaughtException', err, err.stack);
+});
