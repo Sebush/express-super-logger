@@ -59,7 +59,7 @@ module.exports = function(app, options){
 
     if(options.debug){
         app.use(function(req, res, next) {
-            console.log('############ REQUEST - req.url = "%s" #############', req.url);
+            console.info('############ REQUEST - req.url = "%s" #############', req.url);
             next();
         });
     }
