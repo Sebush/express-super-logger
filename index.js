@@ -5,7 +5,7 @@ var FileStreamRotator = require('file-stream-rotator');
 var util = require('util');
 
 // default logFormat
-var  logFormat = '{status: :status, method: ":method", url: ":url", resContentLength: :res[content-length], referrer: ":referrer"}';  // combined common dev short tiny - :remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"
+var  logFormat = 'combined';  // combined common dev short tiny - :remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"
 
 
 /*
@@ -20,12 +20,7 @@ module.exports = function(app, options){
         debug: true,
         color: true,
         mail: {
-            send: function(data){
-                data = _.extend({
-                    subject: 'logger',
-                    text: ''
-                }, data);
-            }
+            send: function(data){}
         },
         log: {
             dir: './tmp/log',
@@ -37,14 +32,14 @@ module.exports = function(app, options){
     }, options);
 
     // writeStreams
-    fs.existsSync(options.log.dir) || fs.mkdirSync(options.log.dir);
+    if(!fs.existsSync(options.log.dir)) fs.mkdirSync(options.log.dir);
     var logStreamAccess = null;
     if(options.log.accessFile){
         logStreamAccess = FileStreamRotator.getStream({
             filename: options.log.dir + '/' + options.log.accessFile,
-            frequency: 'daily',
+            frequency: '1m',
             verbose: false,
-            date_format: "YYYY-MM-DD"
+            // date_format: "YYYY-MM-DD"
         });
     }
 
@@ -114,7 +109,7 @@ module.exports = function(app, options){
             console.warn = function() {
                 var message = util.format.apply(this, arguments);
                 process.stderr.write(util.format(fmt, 35, '[WARN] '+message));
-                options.mail && options.mail.send({subject: 'ZCMS-Warn', text: message});
+                if(options.mail) options.mail.send({subject: 'ZCMS-Warn', text: message});
                 logStreamError.write('{warn: '+message+'}\n');
             };
         }
@@ -122,7 +117,7 @@ module.exports = function(app, options){
         console.error = function() {
             var message = util.format.apply(this, arguments);
             process.stderr.write(util.format(fmt, 31, '[ERROR] '+message));
-            options.mail && options.mail.send({subject: 'ZCMS-Error', text: message});
+            if(options.mail) options.mail.send({subject: 'ZCMS-Error', text: message});
             logStreamError.write('{error: '+message+'}\n');
         };
     }else{
@@ -130,12 +125,12 @@ module.exports = function(app, options){
         if(options.log){
             console.warn = function() {
                 var message = util.format.apply(this, arguments);
-                options.mail && options.mail.send({subject: 'ZCMS-Warn', text: message});
+                if(options.mail) options.mail.send({subject: 'ZCMS-Warn', text: message});
                 logStreamError.write('{warn: '+message+'}\n');
             };
             console.error = function() {
                 var message = util.format.apply(this, arguments);
-                options.mail && options.mail.send({subject: 'ZCMS-Error', text: message});
+                if(options.mail) options.mail.send({subject: 'ZCMS-Error', text: message});
                 logStreamError.write('{error: '+message+'}\n');
             };
         }
