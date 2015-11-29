@@ -31,8 +31,8 @@ module.exports = function(app, options){
             dir: './tmp/log',
             accessFile: 'access-%DATE%.log',  // false to disable
             errorFile: 'error-%DATE%.log',
-            logFormatAccess: '{status: :status, method: ":method", url: ":url", res: {length: ":res[content-length]", time: :response-time}, referrer: ":referrer"}',
-            logFormatError: '{status: :status, method: ":method", url: ":url", res: {length: ":res[content-length]", time: :response-time}, referrer: ":referrer"}'
+            logFormatAccess: ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] :response-time ":referrer" ":user-agent"',
+            logFormatError: ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] :response-time ":referrer" ":user-agent" :req[header] :res[header]'
         }
     }, options);
 
