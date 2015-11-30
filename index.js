@@ -50,6 +50,13 @@ module.exports = function(app, options){
         date_format: "YYYY-MM-DD"
     });
 
+    var logStreamErrorConsole = FileStreamRotator.getStream({
+        filename: options.log.dir + '/' + (options.log && options.log.consoleFile || 'console.log'),
+        frequency: 'daily',
+        verbose: false,
+        date_format: "YYYY-MM-DD"
+    });
+
 
 
     if(options.debug){
@@ -110,7 +117,7 @@ module.exports = function(app, options){
                 var message = util.format.apply(this, arguments);
                 process.stderr.write(util.format(fmt, 35, '[WARN] '+message));
                 if(options.mail) options.mail.send({subject: 'ZCMS-Warn', text: message});
-                logStreamError.write('{warn: '+message+'}\n');
+                logStreamErrorConsole.write('{warn: '+message+'}\n');
             };
         }
 
@@ -118,7 +125,7 @@ module.exports = function(app, options){
             var message = util.format.apply(this, arguments);
             process.stderr.write(util.format(fmt, 31, '[ERROR] '+message));
             if(options.mail) options.mail.send({subject: 'ZCMS-Error', text: message});
-            logStreamError.write('{error: '+message+'}\n');
+            logStreamErrorConsole.write('{error: '+message+'}\n');
         };
     }else{
         console.log = console.info = console.count = console.time = console.timeEnd = console.warn = console.error = function(){};
@@ -126,12 +133,12 @@ module.exports = function(app, options){
             console.warn = function() {
                 var message = util.format.apply(this, arguments);
                 if(options.mail) options.mail.send({subject: 'ZCMS-Warn', text: message});
-                logStreamError.write('{warn: '+message+'}\n');
+                logStreamErrorConsole.write('{warn: '+message+'}\n');
             };
             console.error = function() {
                 var message = util.format.apply(this, arguments);
                 if(options.mail) options.mail.send({subject: 'ZCMS-Error', text: message});
-                logStreamError.write('{error: '+message+'}\n');
+                logStreamErrorConsole.write('{error: '+message+'}\n');
             };
         }
     }
